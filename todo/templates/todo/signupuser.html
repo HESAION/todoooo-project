@@ -1,0 +1,12 @@
+{% extends "todo/base.html" %}
+{% block content %}
+<h1>Hello my dear friend</h1>
+
+<h2>{{ error }}</h2>
+<form action="{% url 'signupuser' %}" method="POST">
+    {{ form.as_p }}
+    <button type="submit">Signup</button>
+    {% csrf_token %}
+</form>
+
+{% endblock %}
