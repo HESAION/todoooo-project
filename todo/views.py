@@ -26,7 +26,8 @@ def signupuser(request):
                 return redirect("currenttodos")  # это для того чтобы залогиненный пользователь не смог войти в админку
             except IntegrityError:
                 return render(request, 'todo/signupuser.html', {'form': UserCreationForm(),
-                                                                'error': 'That username has already been taken. Please change username'})
+                                                                'error': 'That username has already been taken. '
+                                                                         'Please change username'})
         else:
             # Сообщение о несоответствии паролей. Ошибка!!!
             return render(request, 'todo/signupuser.html',
@@ -56,14 +57,23 @@ def loginuser(request):
 
 @login_required()
 def currenttodos(request):
-    todos = ToDo.objects.filter(user=request.user, datecomplited__isnull=True)
+    todos = ToDo.objects.filter(user=request.user, datecompleted__isnull=True)
     return render(request, 'todo/currenttodos.html', {"todos": todos})
 
 
 @login_required()
 def completedtodos(request):
-    todos = ToDo.objects.filter(user=request.user, datecomplited__isnull=False).order_by('-datecomplited')
+    todos = ToDo.objects.filter(user=request.user, datecompleted__isnull=False).order_by('-datecompleted')
     return render(request, 'todo/completedtodos.html', {"todos": todos})
+
+
+@login_required()
+def completetodo(request, todo_pk):
+    todo = get_object_or_404(ToDo, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.datecompleted = timezone.now()
+        todo.save()
+        return redirect('currenttodos')
 
 
 @login_required()
@@ -95,15 +105,6 @@ def createtodo(request):
             return redirect('currenttodos')
         except ValueError:
             return render(request, "todo/createtodo.html", {'form': ToDoForm, "error": "Bad data passed in"})
-
-
-@login_required()
-def completetodo(request, todo_pk):
-    todo = get_object_or_404(ToDo, pk=todo_pk, user=request.user)
-    if request.method == 'POST':
-        todo.datecomplited = timezone.now()
-        todo.save()
-        return redirect('currenttodos')
 
 
 @login_required()
